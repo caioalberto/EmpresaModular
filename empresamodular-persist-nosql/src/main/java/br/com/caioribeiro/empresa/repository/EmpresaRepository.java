@@ -1,14 +1,10 @@
 package br.com.caioribeiro.empresa.repository;
 
-import java.util.Set;
-
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
-import br.com.caioribeiro.empresa.Endereco;
 
 /**
  * Classe que realiza a conexao com o MongoDB.
@@ -39,6 +35,18 @@ public class EmpresaRepository {
         } finally {
             mongoClient.close();
         }
-
     }
+        
+        public void delete(Document empresa) {
+            try {
+                this.mongoClient = new MongoClient(this.host, this.port);
+                MongoDatabase database = this.mongoClient.getDatabase(this.database);
+                MongoCollection<Document> collection = database.getCollection(COLLECTION);
+                collection.insertOne(empresa);
+            } finally {
+                mongoClient.close();
+            }
+        }
+
+    
 }

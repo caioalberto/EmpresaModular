@@ -1,7 +1,5 @@
 package br.com.caioribeiro.empresa;
 
-import static org.apache.commons.lang3.StringUtils.isNumeric;
-
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -55,7 +53,7 @@ public final class Empresa {
     @Length(min = 14, max = 14, message = "O CNPJ deve ter {max} dígitos!")
     @NotBlank(message = "O CNPJ deve ser preenchido!")
     @CNPJ(formatted = true)
-    @Pattern(regexp = "(\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}\\-\\d{2})", message = "O CNPJ deve estar no formato {regexp}")
+    @Pattern(regexp = "(\\d{14})", message = "O CNPJ deve estar no formato {regexp}")
     private String cnpj;
 
     /**
@@ -189,7 +187,6 @@ public final class Empresa {
      * @param cnpj novo valor de cnpj
      */
     public void setCnpj(String cnpj) {
-        isNumeric(cnpj);
         this.cnpj = cnpj;
     }
 

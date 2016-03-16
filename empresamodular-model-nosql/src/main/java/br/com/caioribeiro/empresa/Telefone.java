@@ -32,7 +32,8 @@ public final class Telefone {
      */
     @NotBlank(message = "O telefone não pode estar vazio!")
     @Size(max = 9, min = 8, message = "O telefone não pode ter menos de {min} dígitos e mais de {max} dígitos!")
-    @Pattern(regexp = "([2-5]{1}\\d{3}-\\d{4})|(\\9[4-9]\\d{3}\\-\\d{4})", message = "O Telefone deve ser no modelo: {regexp}")
+    @Pattern.List({ @Pattern(regexp = "[2-5]{1}\\d{7}", groups = Fixo.class, message = "O telefone é inválido, deve conter entre {max} e {min} dígitos!"),
+        @Pattern(regexp = "[5-9]\\d{8}", groups = Celular.class, message = "O celular é inválido, deve conter {max} dígitos!") })
     private String telefone;
 
     /**

@@ -25,11 +25,13 @@ public final class EnderecoToDocument {
         return enderecoDoc;
     }
     
-    public static List<Document> enderecoToDocument(Set<Endereco> enderecos) {
-        List<Document> enderecosDoc = new ArrayList<Document>();        
-        for(Endereco endereco : enderecos) {
-            enderecosDoc.add(enderecoToDocument(endereco));
-        }        
-        return enderecosDoc;        
+    public static List<Document> enderecoListToDocument(Set<Endereco> enderecos) {
+        List<Document> enderecosDoc = new ArrayList<Document>();
+        if (enderecosDoc != null) {
+            for(Endereco endereco : enderecos) {
+                enderecosDoc.add(enderecoToDocument(endereco));
+            }
+        }
+        return enderecosDoc;
     }
 }

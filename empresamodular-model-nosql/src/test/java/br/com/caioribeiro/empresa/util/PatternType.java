@@ -20,8 +20,4 @@ public final class PatternType {
      */
     public static final String CELULAR_REGEX = "\\9[4-9]{1}\\d{3}\\-\\d{4}";
     
-    /**
-     * Constante de regex para cep;
-     */
-    public static final String CEP_REGEX = "\\d{5}-\\d{3}";
 }
