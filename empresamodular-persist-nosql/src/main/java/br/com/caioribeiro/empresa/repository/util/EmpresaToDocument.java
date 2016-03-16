@@ -28,5 +28,4 @@ public final class EmpresaToDocument {
         return null;
     }
     
-    
 }

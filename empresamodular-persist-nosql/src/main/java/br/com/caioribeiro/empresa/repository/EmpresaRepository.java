@@ -1,10 +1,15 @@
 package br.com.caioribeiro.empresa.repository;
 
+import static br.com.caioribeiro.empresa.repository.util.EmpresaToDocument.empresaToDocument;
+
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
+import br.com.caioribeiro.empresa.Empresa;
 
 /**
  * Classe que realiza a conexao com o MongoDB.
@@ -26,27 +31,30 @@ public class EmpresaRepository {
         this.database = database;
     }
 
-    public void save(Document empresa) {
+    public void save(Empresa empresa) throws MongoException {
         try {
+            Document empresaDoc = empresaToDocument(empresa);
             this.mongoClient = new MongoClient(this.host, this.port);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
-            collection.insertOne(empresa);
-        } finally {
+            collection.insertOne(empresaDoc);
+        }
+        finally {
             mongoClient.close();
         }
     }
-        
-        public void delete(Document empresa) {
-            try {
-                this.mongoClient = new MongoClient(this.host, this.port);
-                MongoDatabase database = this.mongoClient.getDatabase(this.database);
-                MongoCollection<Document> collection = database.getCollection(COLLECTION);
-                collection.insertOne(empresa);
-            } finally {
+        public void updateOne(Empresa empresa) throws MongoException {
+            try{
+                Document empresaDoc = empresaToDocument(empresa);                           
+                if(empresa.getCnpj().equals(empresaDoc.get("cnpj"))){
+                    this.mongoClient = new MongoClient(this.host, this.port);
+                    MongoDatabase database = this.mongoClient.getDatabase(this.database);
+                    MongoCollection<Document> collection = database.getCollection(COLLECTION);
+                    collection.updateOne(new Document("cnpj", empresa.getCnpj()), new Document("$set",empresaDoc));
+                }                
+            }            
+            finally{
                 mongoClient.close();
             }
         }
-
-    
 }

@@ -22,8 +22,9 @@ public final class EmailsToDocument {
         if (emails != null) {
             for(Email email : emails) {
                 emailsDoc.add(toDocument(email));
+                return emailsDoc;
             }
         }
-        return emailsDoc;
+        return null;
     }
 }
