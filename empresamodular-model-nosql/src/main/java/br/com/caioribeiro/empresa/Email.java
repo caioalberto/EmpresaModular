@@ -2,10 +2,11 @@ package br.com.caioribeiro.empresa;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.Size;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.beanvalidation.tck.tests.xmlconfiguration.constraintdefinition.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
 import br.com.caioribeiro.empresa.stringbuilder.MyStyle;
@@ -23,8 +24,8 @@ public class Email implements Serializable {
      * Define o username do email.
      */
     @NotBlank(message = "O Nome do usuário não pode ser nulo!")
-    @Length(min = 6, max = 15, message = "O Nome de Usuário deve conter entre {min} e {max}!")
-    @org.hibernate.validator.constraints.Email(regexp = "\\@\\.com")
+    @Size(min = 6, max = 15, message = "O Nome de Usuário deve conter entre {min} e {max}!")
+    @org.hibernate.validator.constraints.Email(regexp = "\\@\\.\\d{3}")
     private String enderecoDeEmail;
 
     // Getters and Setters-------------------------------------------------------------------------------------------------------------

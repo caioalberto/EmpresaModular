@@ -2,6 +2,8 @@ package br.com.caioribeiro.empresa;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
+import java.io.Serializable;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -24,7 +26,12 @@ import br.com.caioribeiro.empresa.stringbuilder.MyTelephoneStyle;
  * @author Caio Ribeiro
  *
  */
-public final class Telefone {
+public final class Telefone implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 4965697003823986253L;
 
     // Variaveis e constantes------------------------------------------------------------------------
     /**
@@ -137,8 +144,8 @@ public final class Telefone {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this, MyTelephoneStyle.MY_TELEPHONE_STYLE).append(this.ddd != null ? this.ddd : null)
-                .append(this.telefone != null ? this.telefone : null).append(this.tipo != null ? this.tipo : null).toString();
+        return new ToStringBuilder(this, MyTelephoneStyle.MY_TELEPHONE_STYLE).append(this.ddd != null ? this.ddd : null).append(this.telefone != null ? this.telefone : null)
+                .append(this.tipo != null ? this.tipo : null).toString();
     }
 
 }

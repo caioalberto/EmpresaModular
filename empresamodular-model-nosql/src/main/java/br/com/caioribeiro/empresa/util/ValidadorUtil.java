@@ -1,8 +1,12 @@
 package br.com.caioribeiro.empresa.util;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  * The Class ValidadorUtil.
@@ -18,6 +22,8 @@ public final class ValidadorUtil {
      */
     private ValidadorUtil() {
     }
+    
+    private Validator validator;
 
     /**
      * Contains error.
@@ -33,5 +39,21 @@ public final class ValidadorUtil {
             }
         }
         return false;
+    }
+    
+    public static Set<ConstraintViolation<Object>> containsError(Object obj) {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Object>> errors = validator.validate(obj);
+        if (errors.size() != 0);            
+            return errors;
+    }
+    
+    public static Set<String> errorMessages (Set<ConstraintViolation<Object>> errors) {
+        Set<String> messageErrors = new HashSet<>();
+        for(ConstraintViolation<Object> constraintViolation : errors) {            
+            messageErrors.add(constraintViolation.getMessage());            
+        }
+        return messageErrors;
     }
 }

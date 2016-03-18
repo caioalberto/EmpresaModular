@@ -26,7 +26,7 @@ public final class EnderecoToDocument {
         return endereco;
     }
 
-    public static List<Document> enderecoListToDocument(Set<Endereco> enderecos) {
+   public static List<Document> enderecoListToDocument(Set<Endereco> enderecos) {
         List<Document> enderecosDoc = new ArrayList<Document>();
         if (enderecosDoc != null) {
             for(Endereco endereco : enderecos) {

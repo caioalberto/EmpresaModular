@@ -1,9 +1,9 @@
 package br.com.caioribeiro.empresa;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
@@ -25,10 +25,17 @@ import br.com.caioribeiro.empresa.stringbuilder.MyStyle;
 /**
  *
  * Classe Empresa, define a criacao de um objeto do tipo empresa, assim como seus atributos e metodos.
+ * 
  * @author Caio Ribeiro
  *
  */
-public final class Empresa {
+public final class Empresa implements Serializable {
+
+    private static final long serialVersionUID = 8234130616027975394L;
+
+    /**
+     * 
+     */
 
     // Variaveis de Atributo-------------------------------------------------------------------------------------
     /**
@@ -52,16 +59,16 @@ public final class Empresa {
      */
     @Length(min = 14, max = 14, message = "O CNPJ deve ter {max} dígitos!")
     @NotBlank(message = "O CNPJ deve ser preenchido!")
-    @CNPJ(formatted = true)
-    @Pattern(regexp = "(\\d{14})", message = "O CNPJ deve estar no formato {regexp}")
+    @CNPJ(formatted = false, message = "Não é um CNPJ válido!")
     private String cnpj;
 
     /**
      * Define a razao social de uma empresa.
      */
     @NotBlank(message = "A Razão Social deve ser preenchida!")
+    @NotEmpty(message = "A Razão Social deve ser preenchida!")
     @Length(min = 10, max = 80, message = "A Razão Social deve ter entre {min} e {max} letras!")
-    @Pattern(regexp ="\\w[^|]|[^;]", message = "A Razão Social não pode conter pipe/ponto-vírgula!")
+    @Pattern(regexp = "^[A-Za-z\\sçáéíóúàâêôãõëöü]+$", message = "A Razão Social deve conter apenas letras!")
     private String razaoSocial;
 
     /**
@@ -69,7 +76,7 @@ public final class Empresa {
      */
     @NotBlank(message = "O Nome Fantasia deve ser preenchido!")
     @Size(min = 10, max = 80, message = "O Nome Fantasia deve ter entre {min} e {max} letras!")
-    @Pattern(regexp ="^[^|]|^[^;]*$", message = "O Nome Fantasia não pode conter pipe/ponto-vírgula!")
+    @Pattern(regexp = "\\w\\^[^|]|^[^;]*$", message = "O Nome Fantasia não pode conter pipe/ponto-vírgula!")
     private String nomeFantasia;
 
     /**
@@ -78,14 +85,12 @@ public final class Empresa {
      */
     @NotEmpty(message = "A lista de E-mails não pode estar vazia!")
     @NotNull(message = "A lista de E-mails não pode estar vazia!")
-    @Valid
     private Set<Email> emails;
 
     /**
      *
      * Define a data de cadastro de uma empresa dentro do objeto.
      */
-    @Future(message = "A data não pode ser anterior a data atual!")
     @Past(message = "A data não pode ser posterior a data atual!")
     @NotNull(message = "A data não pode ser nula!")
     private DateTime dataDeCadastro;
@@ -94,8 +99,7 @@ public final class Empresa {
      * 
      * Define a data de alteracao de uma empresa dentro do objeto.
      */
-    @Future(message = "A data não pode ser anterior a data atual!")
-    @Past(message = "A data não pode ser posterior a data atual!")
+    @Past(message = "A data de alteração não pode ser anterior a data de cadastro!")
     @NotNull(message = "A data não pode ser nula!")
     private DateTime dataDeAlteracao;
 
