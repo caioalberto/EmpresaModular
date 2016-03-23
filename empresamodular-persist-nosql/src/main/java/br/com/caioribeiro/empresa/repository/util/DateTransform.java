@@ -11,8 +11,7 @@ public final class DateTransform implements Codec<DateTime> {
     
     @Override
     public void encode(BsonWriter writer, DateTime value, EncoderContext encoderContext) {
-        writer.writeDateTime(value.getMillis());
-        
+        writer.writeDateTime(value.getMillis());     
     }
 
     @Override
@@ -24,4 +23,5 @@ public final class DateTransform implements Codec<DateTime> {
     public DateTime decode(BsonReader reader, DecoderContext decoderContext) {
         return new DateTime(reader.readDateTime());
     }
+
 }

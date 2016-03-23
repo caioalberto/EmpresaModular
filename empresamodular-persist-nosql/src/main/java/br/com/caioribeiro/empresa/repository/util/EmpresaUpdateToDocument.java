@@ -1,8 +1,10 @@
 package br.com.caioribeiro.empresa.repository.util;
 
-import static br.com.caioribeiro.empresa.repository.util.EmailsToDocument.emailListToDocument;
-import static br.com.caioribeiro.empresa.repository.util.EnderecoToDocument.enderecoListToDocument;
-import static br.com.caioribeiro.empresa.repository.util.TelefoneToDocument.telefoneListToDocument;
+
+
+import static br.com.caioribeiro.empresa.repository.util.EmailAssembler.emailSetToDocument;
+import static br.com.caioribeiro.empresa.repository.util.EnderecoAssembler.enderecoListToDocument;
+import static br.com.caioribeiro.empresa.repository.util.TelefoneAssembler.telefoneListToDocument;
 
 import org.bson.Document;
 
@@ -25,7 +27,7 @@ public final class EmpresaUpdateToDocument {
         if(empresa.getTelefones() != null)
             empresaFilterDoc.append("telefones", telefoneListToDocument(empresa.getTelefones()));
         if(empresa.getEmails() != null)
-            empresaFilterDoc.append("emails", emailListToDocument(empresa.getEmails())); 
+            empresaFilterDoc.append("emails", emailSetToDocument(empresa.getEmails())); 
         if(empresa.getDataDeCadastro() != null)        
             empresaFilterDoc.append("dataDeCriacao", empresa.getDataDeCadastro());
         if(empresa.getDataDeAlteracao() != null)

@@ -1,33 +1,29 @@
 package br.com.caioribeiro.empresa.repository;
 
-import static br.com.caioribeiro.empresa.repository.util.EmpresaToDocument.empresaToDocument;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaToDocument.empresasToDocument;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.documentToEmpresa;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresasToDocument;
 import static br.com.caioribeiro.empresa.repository.util.EmpresaUpdateToDocument.empresaUpdateToDocument;
+import static br.com.caioribeiro.empresa.repository.util.MongoCodecs.isoDateToJoda;
+import static br.com.caioribeiro.empresa.repository.util.MongoCodecs.jodaToIsoDate;
 import static br.com.caioribeiro.empresa.util.ValidadorUtil.containsError;
 import static br.com.caioribeiro.empresa.util.ValidadorUtil.errorMessages;
+import static com.mongodb.client.model.Projections.fields;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.bson.BsonType;
 import org.bson.Document;
-import org.bson.codecs.BsonTypeClassMap;
-import org.bson.codecs.DocumentCodecProvider;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.joda.time.Instant;
 
+import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import br.com.caioribeiro.empresa.Empresa;
-import br.com.caioribeiro.empresa.repository.util.DateTransform;
-import br.com.caioribeiro.empresa.repository.util.EmpresaToDocument;
 
 /**
  * Classe utilitaria que realiza a conexao com o MongoDB, e executa acoees de CRUD.
@@ -42,6 +38,7 @@ public class EmpresaRepository {
     private Integer port = 27017;
     private String database;
     private MongoClient mongoClient;
+    private MongoClientOptions option;
     public static final String COLLECTION = "empresa";
 
     public EmpresaRepository(String host, Integer port, String database) {
@@ -69,18 +66,7 @@ public class EmpresaRepository {
      */
     public void saveOne(Empresa empresa) throws MongoException {
         this.validarEmpresa(empresa);
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         try {
             Document empresaDoc = empresaToDocument(empresa);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
@@ -101,18 +87,7 @@ public class EmpresaRepository {
      * @throws MongoException
      */
     public void saveVarious(Empresa empresa, Empresa outra) throws MongoException {
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         try {
             List<Document> empresasDoc = empresasToDocument(empresa, outra);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
@@ -133,24 +108,13 @@ public class EmpresaRepository {
      */
     public void updateOne(Empresa empresaFilter, Empresa empresa) throws MongoException {
         this.validarEmpresa(empresaFilter);
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         try {
             Document empresaFilterDoc = empresaToDocument(empresaFilter);
                 this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
                 MongoDatabase database = this.mongoClient.getDatabase(this.database);
                 MongoCollection<Document> collection = database.getCollection(COLLECTION);
-                collection.updateOne(new Document("cnpj", empresaFilterDoc.get("cnpj")), new Document("$set", empresaUpdateToDocument(empresa)));
+                collection.updateOne(new Document("_id", empresaFilterDoc.get("_id")), new Document("$set", empresaUpdateToDocument(empresa)));
         } finally {
             mongoClient.close();
         }
@@ -164,18 +128,7 @@ public class EmpresaRepository {
      * @param valor
      */
     public void updateVarious(Empresa empresa) {
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         try {
             Document empresaDoc = empresaUpdateToDocument(empresa);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
@@ -188,18 +141,7 @@ public class EmpresaRepository {
     }
 
     public void deleteOne(String cnpj) throws MongoWriteException {
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         try {
                 this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
                 MongoDatabase database = this.mongoClient.getDatabase(this.database);
@@ -211,25 +153,53 @@ public class EmpresaRepository {
     }
     
     public void deleteVarious(Empresa empresaFilter) throws MongoWriteException {
-        Map<BsonType, Class<?>> replacements = new HashMap<BsonType, Class<?>>();
-        replacements.put(BsonType.DATE_TIME, Instant.class);
-        BsonTypeClassMap bsonTypeClassMap = new BsonTypeClassMap(replacements);
-        DocumentCodecProvider documentCodecProvider = new DocumentCodecProvider(
-                bsonTypeClassMap);
-        CodecRegistry cr = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(new DateTransform()),
-                CodecRegistries.fromProviders(documentCodecProvider),
-                MongoClient.getDefaultCodecRegistry());
-        // add the new code registry has option.
-        MongoClientOptions option = MongoClientOptions.builder()
-                .codecRegistry(cr).build();
+        option = jodaToIsoDate();
         this.validarEmpresa(empresaFilter);
         try {
-            EmpresaToDocument.empresaToDocument(empresaFilter);
+            empresaToDocument(empresaFilter);
                 this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
                 MongoDatabase database = this.mongoClient.getDatabase(this.database);
                 MongoCollection<Document> collection = database.getCollection(COLLECTION);
                 collection.deleteMany(new Document());
+        } finally {
+            mongoClient.close();
+        }
+    }
+    
+    public void find(String cnpj) {
+        option = isoDateToJoda();
+        try {
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            FindIterable<Document> find = collection.find(new Document("_id", cnpj));
+            find.forEach(new Block<Document>() {
+                @Override
+                public void apply(final Document document) {
+                    System.out.println(documentToEmpresa(document));
+                }
+            });
+        } finally {
+            mongoClient.close();
+        }
+    }
+    
+    public void findByFields(Empresa empresaFilter, Empresa empresa) {
+        option = isoDateToJoda();
+        try {
+            Document empresaDoc = empresaToDocument(empresaFilter);
+            Document empresaFilterDoc = empresaUpdateToDocument(empresa);
+            //Document empresaDoc = empresaUpdateToDocument(empresa);
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            FindIterable<Document> find = collection.find(empresaFilterDoc).projection(fields(empresaDoc));
+            find.forEach(new Block<Document>() {
+                @Override
+                public void apply(final Document document){ 
+                    System.out.println(documentToEmpresa(document));
+                }
+            });
         } finally {
             mongoClient.close();
         }

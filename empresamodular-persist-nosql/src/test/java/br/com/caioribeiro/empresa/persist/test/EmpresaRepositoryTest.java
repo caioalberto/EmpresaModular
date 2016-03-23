@@ -1,6 +1,6 @@
 package br.com.caioribeiro.empresa.persist.test;
 
-import static br.com.caioribeiro.empresa.repository.util.EmpresaToDocument.empresaToDocument;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
@@ -68,7 +68,7 @@ public class EmpresaRepositoryTest {
       email.setEnderecoDeEmail("caioalberto11@gmail.com");
       emails.add(email);
       
-      empresa.setCnpj("58943840000178");
+      empresa.setCnpj("72012229000157");
       empresa.setNomeFantasia("Nome Fantasia");
       empresa.setRazaoSocial("Razao Social LTDA");
       empresa.setEndereco(enderecos);
@@ -127,7 +127,7 @@ public class EmpresaRepositoryTest {
     public void deve_percorrer_um_set_de_enderecos_com_mais_de_um_e_retornar_se_esta_contido_no_document() {        
 
         Document empresaDoc = empresaToDocument(empresa);
-        assertEquals(empresaDoc.get("cnpj"), empresa.getCnpj());
+        assertEquals(empresaDoc.get("_id"), empresa.getCnpj());
         assertEquals(empresaDoc.get("nomeFantasia"), empresa.getNomeFantasia());
         assertEquals(empresaDoc.get("razaoSocial"), empresa.getRazaoSocial());
         assertEquals(empresaDoc.get("dataDeCriacao"), empresa.getDataDeCadastro());
@@ -185,9 +185,9 @@ public class EmpresaRepositoryTest {
     public void deve_atualizar_todas_as_empresas_de_acordo_com_o_campo() {
         Empresa empresa3 = new Empresa();
         empresa3.setNomeFantasia("Contmatic Phoenix");
-        empresa3.setRazaoSocial("Softmatic Soluções de Sistemas Automatizados LTDA.");
-        new DateTime();
-        empresa3.setDataDeAlteracao(DateTime.now().plusMonths(60));
+        empresa3.setRazaoSocial("Softmatic LTDA.");
+        empresa3.setDataDeCadastro(DateTime.now());
+        empresa3.setDataDeAlteracao(DateTime.now());
         er.updateVarious(empresa3);
     }
     
@@ -197,7 +197,20 @@ public class EmpresaRepositoryTest {
     }
     
     @Test
-    public void varios() {
+    public void deve_deletar_varios_objetos_do_banco() {
         er.deleteVarious(empresa);
     }
+    
+    @Test
+    public void deve_localizar_uma_empresa_de_acordo_com_a_chave_primaria() {
+        er.find("58943840000178");
+    }
+    
+    @Test
+    public void deve_localizar_uma_empresa_de_acordo_com_o_filtro() {
+        Empresa empresa3 = new Empresa();
+        empresa3.setRazaoSocial("Softmatic LTDA.");        
+        er.findByFields(empresa, empresa3);
+    }
+    
 }
