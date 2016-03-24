@@ -1,6 +1,7 @@
 package br.com.caioribeiro.empresa.persist.test;
 
 import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaProjection.createEmpresaProjectionFields;
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
@@ -93,7 +94,13 @@ public class EmpresaRepositoryTest {
     public void deve_salvar_um_objeto_no_banco() {
         er.saveOne(empresa);
     }
+    
 
+    @Test(expected = IllegalStateException.class)
+    public void deve_gerar_uma_excecao_de_empresa_existente_no_banco() {
+        er.saveOne(empresa);
+    }
+    
     @Test
     public void deve_salvar_varias_empresas_no_banco() {
         er.saveVarious(empresa, empresa2);
@@ -203,14 +210,22 @@ public class EmpresaRepositoryTest {
     
     @Test
     public void deve_localizar_uma_empresa_de_acordo_com_a_chave_primaria() {
-        er.find("58943840000178");
+        System.out.println(er.find("58943840000178"));
     }
     
     @Test
     public void deve_localizar_uma_empresa_de_acordo_com_o_filtro() {
         Empresa empresa3 = new Empresa();
         empresa3.setRazaoSocial("Softmatic LTDA.");        
-        er.findByFields(empresa, empresa3);
+        System.out.println(er.findByFields(empresa, empresa3));
+    }
+    
+    @Test
+    public void deve_retornar_uma_pesquisa_apenas_com_os_campos_selecionados() {
+        Empresa empresa3 = new Empresa();
+        empresa3.setRazaoSocial("Sofmatic LTDA.");
+        List<String> lista = createEmpresaProjectionFields(empresa3);
+        System.out.println(er.findBySpecifiedField(empresa3, lista));
     }
     
 }

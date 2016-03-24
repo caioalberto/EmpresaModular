@@ -282,8 +282,8 @@ public final class Empresa implements Serializable {
     public String toString() {
         DateTimeFormatter dtf = DateTimeFormat.forPattern("dd/MM/YYYY");
         return new ToStringBuilder(this, MyStyle.MY_STYLE).append(this.razaoSocial != null ? "Razão Social: " + this.razaoSocial : null).append(this.nomeFantasia != null ? "Nome Fantasia: " + this.nomeFantasia : null).append(this.cnpj != null ? "CNPJ: " + this.cnpj : null)
-                .append(enderecos != null ? "Endereço: " + enderecos : null).append(telefones != null ? "Contato: " + telefones : null).append(emails != null ? emails + "\n" : null)
+                .append(this.enderecos != null ? "Endereço: " + this.enderecos : null).append(this.telefones != null ? "Contato: " + this.telefones : null).append(this.emails != null ? this.emails + "\n" : null)
                 .append(this.dataDeCadastro != null ? "Data de Abertura: " + dtf.print(this.dataDeCadastro) : null)
-                .append(this.dataDeCadastro != null ? "Data de Alteração: " + dtf.print(this.dataDeAlteracao) : null).toString();
+                .append(this.dataDeCadastro != null ? "Data de Alteração: " + dtf.print(this.dataDeAlteracao) + "\n" : null).toString();
     }
 }

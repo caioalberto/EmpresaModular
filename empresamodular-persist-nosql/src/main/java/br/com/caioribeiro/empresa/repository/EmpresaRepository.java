@@ -1,6 +1,7 @@
 package br.com.caioribeiro.empresa.repository;
 
 import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.documentToEmpresa;
+import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.documentsToEmpresa;
 import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
 import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresasToDocument;
 import static br.com.caioribeiro.empresa.repository.util.EmpresaUpdateToDocument.empresaUpdateToDocument;
@@ -9,7 +10,9 @@ import static br.com.caioribeiro.empresa.repository.util.MongoCodecs.jodaToIsoDa
 import static br.com.caioribeiro.empresa.util.ValidadorUtil.containsError;
 import static br.com.caioribeiro.empresa.util.ValidadorUtil.errorMessages;
 import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
@@ -67,13 +70,17 @@ public class EmpresaRepository {
     public void saveOne(Empresa empresa) throws MongoException {
         this.validarEmpresa(empresa);
         option = jodaToIsoDate();
-        try {
-            Document empresaDoc = empresaToDocument(empresa);
+        try{
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            Document empresaDoc = empresaToDocument(empresa);
             collection.insertOne(empresaDoc);
-        } finally {
+        }
+        catch(MongoWriteException mwe){
+            throw new IllegalStateException("Esta empresa já está inserida no banco! Favor insira outra!");
+        }
+        finally{
             mongoClient.close();
         }
     }
@@ -89,10 +96,10 @@ public class EmpresaRepository {
     public void saveVarious(Empresa empresa, Empresa outra) throws MongoException {
         option = jodaToIsoDate();
         try {
-            List<Document> empresasDoc = empresasToDocument(empresa, outra);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            List<Document> empresasDoc = empresasToDocument(empresa, outra);
             collection.insertMany(empresasDoc);
         } finally {
             mongoClient.close();
@@ -166,43 +173,75 @@ public class EmpresaRepository {
         }
     }
     
-    public void find(String cnpj) {
+    public List<Empresa> find(String cnpj) {
+        List<Empresa> empresas = new ArrayList<Empresa>();
+        List<Document> empresasDoc = new ArrayList<Document>();
         option = isoDateToJoda();
         try {
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
             FindIterable<Document> find = collection.find(new Document("_id", cnpj));
-            find.forEach(new Block<Document>() {
-                @Override
-                public void apply(final Document document) {
-                    System.out.println(documentToEmpresa(document));
-                }
-            });
+            empresasDoc = findForEach(find);
+            empresas.addAll(documentsToEmpresa(empresasDoc));
         } finally {
             mongoClient.close();
         }
+        
+        
+        return empresas; 
+    }
+     
+    private List<Document> findForEach(FindIterable<Document> find) {
+        List<Document> empresasDoc = new ArrayList<Document>();
+        find.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                empresasDoc.add(document);
+            }
+        });
+        return empresasDoc;
     }
     
-    public void findByFields(Empresa empresaFilter, Empresa empresa) {
+    
+    public List<Empresa> findByFields(Empresa empresaFilter, Empresa empresa) {
+        List<Empresa> empresas = new ArrayList<Empresa>();
         option = isoDateToJoda();
         try {
-            Document empresaDoc = empresaToDocument(empresaFilter);
-            Document empresaFilterDoc = empresaUpdateToDocument(empresa);
-            //Document empresaDoc = empresaUpdateToDocument(empresa);
+            Document empresaDoc = empresaUpdateToDocument(empresaFilter);
+            Document empresaFilterDoc = empresaUpdateToDocument(empresa);           
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
             FindIterable<Document> find = collection.find(empresaFilterDoc).projection(fields(empresaDoc));
-            find.forEach(new Block<Document>() {
-                @Override
-                public void apply(final Document document){ 
-                    System.out.println(documentToEmpresa(document));
-                }
-            });
+            List<Document> empresasDoc = findForEach(find);
+            for(Document document : empresasDoc) {
+                empresas.add(documentToEmpresa(document));
+            }
         } finally {
             mongoClient.close();
         }
+        return empresas;    
     }
+
+    public List<Empresa> findBySpecifiedField(Empresa empresaFilter, List<String> fields) {
+        List<Empresa> empresas = new ArrayList<Empresa>();
+        option = isoDateToJoda();
+        try{
+            Document empresaFilterDoc = empresaUpdateToDocument(empresaFilter);
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            FindIterable<Document> find = collection.find(empresaFilterDoc).projection(fields(include(fields)));
+                    List<Document> empresasDoc = findForEach(find);
+            for(Document document : empresasDoc) {
+                empresas.add(documentToEmpresa(document));
+            }
+        } finally {
+            mongoClient.close();
+        }
+        return empresas;    
+    }
+
 }
 

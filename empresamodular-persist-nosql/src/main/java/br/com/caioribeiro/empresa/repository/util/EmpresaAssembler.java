@@ -50,9 +50,9 @@ public final class EmpresaAssembler {
     public static Empresa documentToEmpresa(Document empresaDoc) {
         Empresa empresa = new Empresa();       
         
-            empresa.setCnpj(empresaDoc.get("_id").toString());
-            empresa.setRazaoSocial(empresaDoc.get("razaoSocial").toString());
-            empresa.setNomeFantasia(empresaDoc.get("nomeFantasia").toString());
+            empresa.setCnpj(empresaDoc.getString("_id"));
+            empresa.setRazaoSocial(empresaDoc.getString("razaoSocial"));
+            empresa.setNomeFantasia(empresaDoc.getString("nomeFantasia"));
             empresa.setEndereco(enderecosDocumentToSet((List<Document>) empresaDoc.get("enderecos")));
             empresa.setTelefone(telefoneDocumentToSet((List<Document>) empresaDoc.get("telefones")));
             empresa.setEmails(emailListToSet((List<Document>) empresaDoc.get("emails")));
@@ -60,6 +60,17 @@ public final class EmpresaAssembler {
             empresa.setDataDeAlteracao((DateTime) empresaDoc.get("dataDeAlteracao"));
             empresa.toString();
         return empresa;
+    }
+    
+    public static List<Empresa> documentsToEmpresa(List<Document> empresasDoc) {
+        List<Empresa> empresas = new ArrayList<Empresa>();
+        if (empresasDoc != null) {
+            for(Document empresaDoc : empresasDoc) {
+                empresas.add(documentToEmpresa(empresaDoc));
+                return empresas;
+            }
+        }
+        return null;
     }
     
 }
