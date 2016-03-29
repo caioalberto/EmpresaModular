@@ -8,18 +8,10 @@
 	</parent>
 	<artifactId>empresamodular-persist-nosql</artifactId>
 	<dependencies>
-
 		<dependency>
 			<groupId>br.com.caioribeiro</groupId>
-			<artifactId>empresamodular-model-nosql</artifactId>
+			<artifactId>empresamodular-assembler</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver</artifactId>
-			<version>3.0.4</version>
-		</dependency>
-
 	</dependencies>
 </project>

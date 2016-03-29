@@ -8,6 +8,7 @@
 	<modules>
 		<module>empresamodular-model-nosql</module>
 		<module>empresamodular-persist-nosql</module>
+		<module>empresamodular-assembler</module>
 	</modules>
 	<dependencies>
 		<dependency>

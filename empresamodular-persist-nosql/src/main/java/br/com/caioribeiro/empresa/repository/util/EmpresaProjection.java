@@ -6,17 +6,37 @@ import java.util.List;
 import br.com.caioribeiro.empresa.Empresa;
 
 public final class EmpresaProjection {
-    private EmpresaProjection(){};
-    
+
+    private EmpresaProjection() {
+    };
+
     public static List<String> createEmpresaProjectionFields(Empresa empresaProj) {
         List<String> fieldsProj = new ArrayList<String>();
-        if (empresaProj.getCnpj().length() != 0) {
+
+        if (empresaProj.getCnpj() != null) {
             fieldsProj.add("cnpj");
-            if (empresaProj.getNomeFantasia().length() != 0)
-                fieldsProj.add("nomeFantasia");
-            if (empresaProj.getRazaoSocial().length() != 0)
-                fieldsProj.add("razaoSocial");
         }
+
+        if (empresaProj.getNomeFantasia() != null) {
+            fieldsProj.add("nomeFantasia");
+        }
+
+        if (empresaProj.getRazaoSocial() != null) {
+            fieldsProj.add("razaoSocial");
+        }
+        
+        if(empresaProj.getEmails() != null) {
+            fieldsProj.add("emails");
+        }
+        
+        if(empresaProj.getEnderecos() != null) {
+            fieldsProj.add("enderecos");
+        }
+        
+        if(empresaProj.getTelefones() != null) {
+            fieldsProj.add("telefones");
+        }
+        
         return fieldsProj;
     }
 

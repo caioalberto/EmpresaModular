@@ -29,7 +29,7 @@ import br.com.caioribeiro.empresa.stringbuilder.MyStyle;
  * @author Caio Ribeiro
  *
  */
-public final class Empresa implements Serializable {
+public class Empresa implements Serializable {
 
     private static final long serialVersionUID = 8234130616027975394L;
 

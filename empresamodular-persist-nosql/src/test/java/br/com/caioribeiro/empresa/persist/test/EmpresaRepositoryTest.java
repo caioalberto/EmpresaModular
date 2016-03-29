@@ -1,6 +1,6 @@
 package br.com.caioribeiro.empresa.persist.test;
 
-import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
+import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.empresaToDocument;
 import static br.com.caioribeiro.empresa.repository.util.EmpresaProjection.createEmpresaProjectionFields;
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
@@ -224,8 +224,7 @@ public class EmpresaRepositoryTest {
     public void deve_retornar_uma_pesquisa_apenas_com_os_campos_selecionados() {
         Empresa empresa3 = new Empresa();
         empresa3.setRazaoSocial("Sofmatic LTDA.");
-        List<String> lista = createEmpresaProjectionFields(empresa3);
-        System.out.println(er.findBySpecifiedField(empresa3, lista));
+        System.out.println(er.findBySpecifiedFields(empresa3));
     }
     
 }

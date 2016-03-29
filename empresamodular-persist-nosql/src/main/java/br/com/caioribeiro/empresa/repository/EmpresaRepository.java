@@ -1,10 +1,10 @@
 package br.com.caioribeiro.empresa.repository;
 
-import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.documentToEmpresa;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.documentsToEmpresa;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresaToDocument;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaAssembler.empresasToDocument;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaUpdateToDocument.empresaUpdateToDocument;
+import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.documentToEmpresa;
+import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.documentsToEmpresa;
+import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.empresaToDocument;
+import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.empresasToDocument;
+import static br.com.caioribeiro.empresa.assembler.EmpresaUpdateToDocument.empresaUpdateToDocument;
 import static br.com.caioribeiro.empresa.repository.util.MongoCodecs.isoDateToJoda;
 import static br.com.caioribeiro.empresa.repository.util.MongoCodecs.jodaToIsoDate;
 import static br.com.caioribeiro.empresa.util.ValidadorUtil.containsError;
@@ -13,7 +13,9 @@ import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.Document;
 
@@ -70,17 +72,15 @@ public class EmpresaRepository {
     public void saveOne(Empresa empresa) throws MongoException {
         this.validarEmpresa(empresa);
         option = jodaToIsoDate();
-        try{
+        try {
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
             Document empresaDoc = empresaToDocument(empresa);
             collection.insertOne(empresaDoc);
-        }
-        catch(MongoWriteException mwe){
+        } catch (MongoWriteException mwe) {
             throw new IllegalStateException("Esta empresa já está inserida no banco! Favor insira outra!");
-        }
-        finally{
+        } finally {
             mongoClient.close();
         }
     }
@@ -118,10 +118,10 @@ public class EmpresaRepository {
         option = jodaToIsoDate();
         try {
             Document empresaFilterDoc = empresaToDocument(empresaFilter);
-                this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
-                MongoDatabase database = this.mongoClient.getDatabase(this.database);
-                MongoCollection<Document> collection = database.getCollection(COLLECTION);
-                collection.updateOne(new Document("_id", empresaFilterDoc.get("_id")), new Document("$set", empresaUpdateToDocument(empresa)));
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            collection.updateOne(new Document("_id", empresaFilterDoc.get("_id")), new Document("$set", empresaUpdateToDocument(empresa)));
         } finally {
             mongoClient.close();
         }
@@ -147,32 +147,50 @@ public class EmpresaRepository {
         }
     }
 
+    /**
+     * Deleta um objeto do tipo empresa do banco, de acordo com o cnpj.
+     * 
+     * @param cnpj
+     * @throws MongoWriteException
+     */
     public void deleteOne(String cnpj) throws MongoWriteException {
         option = jodaToIsoDate();
         try {
-                this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
-                MongoDatabase database = this.mongoClient.getDatabase(this.database);
-                MongoCollection<Document> collection = database.getCollection(COLLECTION);
-                collection.deleteOne(new Document("cnpj", cnpj));
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            collection.deleteOne(new Document("cnpj", cnpj));
         } finally {
             mongoClient.close();
         }
     }
-    
+
+    /**
+     * Deleta todos os objetos do banco.
+     * 
+     * @param empresaFilter
+     * @throws MongoWriteException
+     */
     public void deleteVarious(Empresa empresaFilter) throws MongoWriteException {
         option = jodaToIsoDate();
         this.validarEmpresa(empresaFilter);
         try {
-            empresaToDocument(empresaFilter);
-                this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
-                MongoDatabase database = this.mongoClient.getDatabase(this.database);
-                MongoCollection<Document> collection = database.getCollection(COLLECTION);
-                collection.deleteMany(new Document());
+            Document empresaDoc = empresaToDocument(empresaFilter);
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            collection.deleteMany(empresaDoc);
         } finally {
             mongoClient.close();
         }
     }
-    
+
+    /**
+     * Retorna todas as empresas do banco, de acordo com o cnpj digitado.
+     * 
+     * @param cnpj
+     * @return
+     */
     public List<Empresa> find(String cnpj) {
         List<Empresa> empresas = new ArrayList<Empresa>();
         List<Document> empresasDoc = new ArrayList<Document>();
@@ -187,11 +205,16 @@ public class EmpresaRepository {
         } finally {
             mongoClient.close();
         }
-        
-        
-        return empresas; 
+
+        return empresas;
     }
-     
+
+    /**
+     * Metodo privado, que traz a lista de documentos contidas dentro do banco de acordo com a instrucao passada.
+     * 
+     * @param find
+     * @return
+     */
     private List<Document> findForEach(FindIterable<Document> find) {
         List<Document> empresasDoc = new ArrayList<Document>();
         find.forEach(new Block<Document>() {
@@ -202,14 +225,20 @@ public class EmpresaRepository {
         });
         return empresasDoc;
     }
-    
-    
+
+    /**
+     * Encontra no banco um objeto do tipo empresa, de acordo com a empresa filtro.
+     * 
+     * @param empresaFilter
+     * @param empresa
+     * @return
+     */
     public List<Empresa> findByFields(Empresa empresaFilter, Empresa empresa) {
         List<Empresa> empresas = new ArrayList<Empresa>();
         option = isoDateToJoda();
         try {
             Document empresaDoc = empresaUpdateToDocument(empresaFilter);
-            Document empresaFilterDoc = empresaUpdateToDocument(empresa);           
+            Document empresaFilterDoc = empresaUpdateToDocument(empresa);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
@@ -221,27 +250,49 @@ public class EmpresaRepository {
         } finally {
             mongoClient.close();
         }
-        return empresas;    
+        return empresas;
     }
 
-    public List<Empresa> findBySpecifiedField(Empresa empresaFilter, List<String> fields) {
+    /**
+     * Localiza no banco, um objeto do tipo empresa, de acordo com os campos especificados no filtro.
+     * 
+     * @param empresaFilter
+     * @return
+     */
+    public List<Empresa> findBySpecifiedFields(Empresa empresaFilter) {
         List<Empresa> empresas = new ArrayList<Empresa>();
         option = isoDateToJoda();
-        try{
+        try {
             Document empresaFilterDoc = empresaUpdateToDocument(empresaFilter);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            List<String> projKeys = projectionsInclude(empresaFilterDoc);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
-            FindIterable<Document> find = collection.find(empresaFilterDoc).projection(fields(include(fields)));
-                    List<Document> empresasDoc = findForEach(find);
+            FindIterable<Document> find = collection.find().projection(fields(include(projKeys)));
+            List<Document> empresasDoc = findForEach(find);
             for(Document document : empresasDoc) {
                 empresas.add(documentToEmpresa(document));
             }
         } finally {
             mongoClient.close();
         }
-        return empresas;    
+        return empresas;
+    }
+
+    /**
+     * Metodo privado que retorna uma lista de campos a serem utilizados como filtro de pesquisa.
+     * 
+     * @param empresaDoc
+     * @return
+     */
+    private List<String> projectionsInclude(Document empresaDoc) {
+        Set<String> setKeys = empresaDoc.keySet();
+        List<String> listKeys = new ArrayList<>();
+        Iterator<String> itr = setKeys.iterator();
+        while (itr.hasNext()) {
+            listKeys.add(itr.next());
+        }
+        return listKeys;
     }
 
 }
-
