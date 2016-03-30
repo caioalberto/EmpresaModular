@@ -1,6 +1,7 @@
 package br.com.caioribeiro.empresa;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -29,7 +30,7 @@ import br.com.caioribeiro.empresa.stringbuilder.MyStyle;
  * @author Caio Ribeiro
  *
  */
-public class Empresa implements Serializable {
+public final class Empresa implements Serializable {
 
     private static final long serialVersionUID = 8234130616027975394L;
 

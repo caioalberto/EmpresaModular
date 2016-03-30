@@ -1,170 +1,90 @@
 package br.com.caioribeiro.empresa.persist.test;
 
 import static br.com.caioribeiro.empresa.assembler.EmpresaAssembler.empresaToDocument;
-import static br.com.caioribeiro.empresa.repository.util.EmpresaProjection.createEmpresaProjectionFields;
+import static br.com.six2six.fixturefactory.Fixture.from;
 import static junit.framework.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
 
+import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.bson.Document;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import br.com.caioribeiro.empresa.Email;
 import br.com.caioribeiro.empresa.Empresa;
 import br.com.caioribeiro.empresa.Endereco;
-import br.com.caioribeiro.empresa.EnderecoType;
 import br.com.caioribeiro.empresa.Telefone;
-import br.com.caioribeiro.empresa.TelefoneType;
 import br.com.caioribeiro.empresa.repository.EmpresaRepository;
+import br.com.six2six.fixturefactory.loader.FixtureFactoryLoader;
 
 public class EmpresaRepositoryTest {
     
-    /** The empresa. */
-    private Empresa empresa = new Empresa();
-    private Empresa empresa2 = new Empresa();
-    private Endereco endereco = new Endereco();
-    private Endereco endereco2 = new Endereco();
+    private String cnpj;
+    private Empresa empresa, empresa2;
+    private Endereco endereco;
+    private Endereco endereco2;
+    private Telefone telefone;
+    private Email email;
     private Set<Endereco> enderecos = new HashSet<Endereco>();
     private Set<Email> emails = new HashSet<Email>();
     private Set<Telefone> telefones = new HashSet<Telefone>();
     
   EmpresaRepository er = new EmpresaRepository("localhost", 27017, "empresa");
 
+  @BeforeClass
+  public static void setUpBeforeClass() {
+      
+      FixtureFactoryLoader.loadTemplates("br.com.caioribeiro.empresa.template");
+  }
+  
   @Before
   public void setUp() {
       
-      Endereco endereco = new Endereco();
-      endereco.setLogradouro("Rua José dos Santos");
-      endereco.setNumero(143);
-      endereco.setBairro("Jd Flor da Montanha");
-      endereco.setCep("07097170");
-      endereco.setCidade("Guarulhos");
-      endereco.setEstado("SP");
-      endereco.setPais("BR");
-      endereco.setEnderecoType(EnderecoType.RESIDENCIAL);
-      enderecos.add(endereco);
+      cnpj = er.findObjectAndReturnString();
       
-      endereco2.setLogradouro("Rua hagsagsuygasyua");
-      endereco2.setNumero(1);
-      endereco2.setBairro("asuhdiusahdusai");
-      endereco2.setCep("07147850");
-      endereco2.setCidade("Gsadsa");
-      endereco2.setEstado("SP");
-      endereco2.setPais("BR");
-      endereco2.setEnderecoType(EnderecoType.COMERCIAL);
+      empresa = from(Empresa.class).gimme("valid");
+      empresa2 = new Empresa();
+      
+      endereco = from(Endereco.class).gimme("valid");
+      endereco2 = from(Endereco.class).gimme("valid");
+      
+      enderecos.add(endereco);
       enderecos.add(endereco2);
       
-      Telefone telefone = new Telefone();
-      telefone.setDdd(11);
-      telefone.setTelefone("2459-4064");
-      telefone.setTipo(TelefoneType.COMERCIAL);
+      telefone = from(Telefone.class).gimme("valid");
+      
       telefones.add(telefone);
       
-      Email email = new Email();
-      email.setEnderecoDeEmail("caioalberto11@gmail.com");
+      email = from(Email.class).gimme("valid");
+      
       emails.add(email);
-      
-      empresa.setCnpj("72012229000157");
-      empresa.setNomeFantasia("Nome Fantasia");
-      empresa.setRazaoSocial("Razao Social LTDA");
-      empresa.setEndereco(enderecos);
-      empresa.setTelefone(telefones);
-      empresa.setEmails(emails);
-      empresa.setDataDeCadastro(DateTime.now());
-      empresa.setDataDeAlteracao(DateTime.now());
-      
-      empresa2.setCnpj("58119371000177");
-      empresa2.setNomeFantasia("Novo Nome Fantasia");
-      empresa2.setRazaoSocial("Razao Social");
-      empresa2.setEndereco(enderecos);
-      empresa2.setTelefone(telefones);
-      empresa2.setEmails(emails);
-      empresa2.setDataDeCadastro(DateTime.now().minusMonths(6));
-      empresa2.setDataDeAlteracao(DateTime.now());
-      
-      
+                        
   }
   
     @Test
-    public void deve_salvar_um_objeto_no_banco() {
-        er.saveOne(empresa);
-    }
-    
-
-    @Test(expected = IllegalStateException.class)
-    public void deve_gerar_uma_excecao_de_empresa_existente_no_banco() {
+    public void deve_salvar_um_objeto_no_banco() {        
         er.saveOne(empresa);
     }
     
     @Test
-    public void deve_salvar_varias_empresas_no_banco() {
-        er.saveVarious(empresa, empresa2);
+    public void deve_inserir_200_registros_no_banco() {
+        int i = 0;
+        while (i < 20) {
+            i++;
+            empresa = from(Empresa.class).gimme("valid");
+            er.saveOne(empresa);
+        }
     }
-    
+
     @Test
     public void deve_retornar_null_se_empresa_for_nula() {        
         assertNull(empresaToDocument(null));
     }
     
-
-    @Test
-    public void deve_retornar_se_o_documento_gerado_e_igual_ao_esperado() {
-        Document empresaDoc = new Document();
-        List<Document> enderecosDoc = (List<Document>) empresaDoc.get("enderecos");
-        for(Document document : enderecosDoc) {
-            if(document.get("bairro").equals(endereco.getBairro())){
-            assertEquals(endereco.getBairro(), document.get("bairro"));
-            assertEquals(endereco.getCep(), document.get("cep"));
-            assertEquals(endereco.getCidade(), document.get("cidade"));
-            assertEquals(endereco.getEnderecoType().name(), document.get("tipoEndereco"));
-            assertEquals(endereco.getEstado(), document.get("estado"));
-            assertEquals(endereco.getLogradouro(), document.get("logradouro"));
-            assertEquals(endereco.getNumero(), document.get("numero"));
-            assertEquals(endereco.getPais(), document.get("pais"));
-            }
-        }
-    }
-    
-    @Test
-    public void deve_percorrer_um_set_de_enderecos_com_mais_de_um_e_retornar_se_esta_contido_no_document() {        
-
-        Document empresaDoc = empresaToDocument(empresa);
-        assertEquals(empresaDoc.get("_id"), empresa.getCnpj());
-        assertEquals(empresaDoc.get("nomeFantasia"), empresa.getNomeFantasia());
-        assertEquals(empresaDoc.get("razaoSocial"), empresa.getRazaoSocial());
-        assertEquals(empresaDoc.get("dataDeCriacao"), empresa.getDataDeCadastro());
-        assertEquals(empresaDoc.get("dataDeAlteracao"), empresa.getDataDeAlteracao());
-
-        List<Document> enderecosDoc = (List<Document>) empresaDoc.get("enderecos");
-        for(Document document : enderecosDoc) {
-            if(document.get("bairro").equals(endereco.getBairro())){
-            assertEquals(endereco.getBairro(), document.get("bairro"));
-            assertEquals(endereco.getCep(), document.get("cep"));
-            assertEquals(endereco.getCidade(), document.get("cidade"));
-            assertEquals(endereco.getEnderecoType().name(), document.get("tipoEndereco"));
-            assertEquals(endereco.getEstado(), document.get("estado"));
-            assertEquals(endereco.getLogradouro(), document.get("logradouro"));
-            assertEquals(endereco.getNumero(), document.get("numero"));
-            assertEquals(endereco.getPais(), document.get("pais"));
-            }
-            if(document.get("bairro").equals(endereco2.getBairro())){
-                assertEquals(endereco2.getBairro(), document.get("bairro"));
-                assertEquals(endereco2.getCep(), document.get("cep"));
-                assertEquals(endereco2.getCidade(), document.get("cidade"));
-                assertEquals(endereco2.getEnderecoType().name(), document.get("tipoEndereco"));
-                assertEquals(endereco2.getEstado(), document.get("estado"));
-                assertEquals(endereco2.getLogradouro(), document.get("logradouro"));
-                assertEquals(endereco2.getNumero(), document.get("numero"));
-                assertEquals(endereco2.getPais(), document.get("pais"));
-            }
-        }
-    }
-     
     @Test
     public void deve_atualizar_uma_empresa_de_acordo_com_a_empresa_passada() {
         Empresa empresa3 = new Empresa();
@@ -175,7 +95,7 @@ public class EmpresaRepositoryTest {
         er.updateOne(empresa, empresa3);
     }
     
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void deve_gerar_uma_excecao_de_empresa_com_erros() {
         empresa.setCnpj("1");
         empresa.setNomeFantasia("");
@@ -198,19 +118,22 @@ public class EmpresaRepositoryTest {
         er.updateVarious(empresa3);
     }
     
+    
     @Test
     public void deve_deletar_uma_empresa_do_banco() {
-        er.deleteOne("58119371000177");
+        er.deleteOne(cnpj);
     }
     
     @Test
     public void deve_deletar_varios_objetos_do_banco() {
-        er.deleteVarious(empresa);
+        empresa2.setNomeFantasia("Teste de empresa");
+        empresa2.setRazaoSocial("Contmatic LTDA");
+        er.deleteVarious(empresa2);
     }
     
     @Test
     public void deve_localizar_uma_empresa_de_acordo_com_a_chave_primaria() {
-        System.out.println(er.find("58943840000178"));
+        System.out.println(er.find(cnpj));
     }
     
     @Test
@@ -227,4 +150,9 @@ public class EmpresaRepositoryTest {
         System.out.println(er.findBySpecifiedFields(empresa3));
     }
     
+    @Test
+    public void deve_retornar_uma_pesquisa_de_empresas_de_acordo_com_a_quantidade_e_o_numero_de_paginas_passados() {
+       System.out.println(er.findByNumberAndQuantity(empresa, 3, 20));
+    }
+
 }

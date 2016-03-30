@@ -103,7 +103,7 @@ public class EmpresaTest {
     @Test
     public void nao_deve_aceitar_o_cnpj_invalido() {
         empresa.setCnpj("12345678901234");
-        assertTrue(containsError(validator.validate(empresa), "O CNPJ deve estar no formato (\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}\\-\\d{2})"));
+        assertTrue(containsError(validator.validate(empresa), "Não é um CNPJ válido!"));
     }
 
     /**
@@ -139,7 +139,7 @@ public class EmpresaTest {
     @Test
     public void nao_deve_aceitar_razao_social_fora_da_pattern() {
         empresa.setRazaoSocial("Empresa|Teste;testando");
-        assertTrue(containsError(validator.validate(empresa), "A Razão Social não pode conter pipe/ponto-vírgula!"));
+        assertTrue(containsError(validator.validate(empresa), "A Razão Social deve conter apenas letras!"));
     }
 
     @Test
@@ -239,16 +239,6 @@ public class EmpresaTest {
     @Test
     public void nao_deve_aceitar_uma_data_de_alteracao_nula() {
         empresa.setDataDeAlteracao(null);
-    }
-
-    /**
-     * Nao_deve_aceitar_uma_data_de_alteracao_anterior_a_data_de_criacao.
-     */
-    @Test
-    public void nao_deve_aceitar_uma_data_de_alteracao_anterior_a_data_de_criacao() {
-        empresa.setDataDeAlteracao(now().minusYears(16));
-        empresa.setDataDeCadastro(now());
-        assertTrue(containsError(validator.validate(empresa), "A data não pode ser anterior a data atual!"));
     }
 
     /**

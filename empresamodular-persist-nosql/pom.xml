@@ -13,5 +13,12 @@
 			<artifactId>empresamodular-assembler</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>br.com.caioribeiro</groupId>
+			<artifactId>empresamodular-model-nosql</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

@@ -15,7 +15,7 @@ import br.com.caioribeiro.empresa.stringbuilder.MyStyle;
  * @author Caio Ribeiro
  *
  */
-public class Email implements Serializable {
+public final class Email implements Serializable {
     /**
      * 
      */

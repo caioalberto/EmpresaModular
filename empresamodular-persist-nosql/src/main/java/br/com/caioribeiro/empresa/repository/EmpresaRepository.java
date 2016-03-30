@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
@@ -27,8 +28,11 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.connection.ConnectionPoolSettings;
 
 import br.com.caioribeiro.empresa.Empresa;
+import br.com.caioribeiro.empresa.assembler.EmpresaUpdateToDocument;
 
 /**
  * Classe utilitaria que realiza a conexao com o MongoDB, e executa acoees de CRUD.
@@ -74,7 +78,7 @@ public class EmpresaRepository {
         option = jodaToIsoDate();
         try {
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
-            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);            
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
             Document empresaDoc = empresaToDocument(empresa);
             collection.insertOne(empresaDoc);
@@ -140,7 +144,7 @@ public class EmpresaRepository {
             Document empresaDoc = empresaUpdateToDocument(empresa);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
-            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);            
             collection.updateMany(new Document(), new Document("$set", empresaDoc));
         } finally {
             mongoClient.close();
@@ -159,7 +163,7 @@ public class EmpresaRepository {
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
-            collection.deleteOne(new Document("cnpj", cnpj));
+            collection.deleteOne(new Document("_id", cnpj));
         } finally {
             mongoClient.close();
         }
@@ -171,15 +175,14 @@ public class EmpresaRepository {
      * @param empresaFilter
      * @throws MongoWriteException
      */
-    public void deleteVarious(Empresa empresaFilter) throws MongoWriteException {
+    public void deleteVarious(Empresa empresaFiltro) throws MongoWriteException {
         option = jodaToIsoDate();
-        this.validarEmpresa(empresaFilter);
         try {
-            Document empresaDoc = empresaToDocument(empresaFilter);
+            Document empresaFiltroDoc = empresaUpdateToDocument(empresaFiltro);
             this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
             MongoDatabase database = this.mongoClient.getDatabase(this.database);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
-            collection.deleteMany(empresaDoc);
+            collection.deleteMany(new Document(empresaFiltroDoc));
         } finally {
             mongoClient.close();
         }
@@ -252,6 +255,28 @@ public class EmpresaRepository {
         }
         return empresas;
     }
+    
+    public String findObjectAndReturnString() {
+        List<Empresa> empresas = new ArrayList<Empresa>();
+        String cnpj = null;
+        option = isoDateToJoda();
+        try {
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            FindIterable<Document> find = collection.find().projection(new Document());
+            List<Document> empresasDoc = findForEach(find);
+            for(Document document : empresasDoc) {
+                empresas.add(documentToEmpresa(document));
+            }
+            for(Empresa emp : empresas) {
+                cnpj = emp.getCnpj();
+            }
+        } finally {
+            mongoClient.close();
+        }
+        return cnpj;
+    }
 
     /**
      * Localiza no banco, um objeto do tipo empresa, de acordo com os campos especificados no filtro.
@@ -269,6 +294,25 @@ public class EmpresaRepository {
             List<String> projKeys = projectionsInclude(empresaFilterDoc);
             MongoCollection<Document> collection = database.getCollection(COLLECTION);
             FindIterable<Document> find = collection.find().projection(fields(include(projKeys)));
+            List<Document> empresasDoc = findForEach(find);
+            for(Document document : empresasDoc) {
+                empresas.add(documentToEmpresa(document));
+            }
+            List<String> cnpjs = catchCnpj(find);
+        } finally {
+            mongoClient.close();
+        }
+        return empresas;
+    }
+    
+    public List<Empresa> findByNumberAndQuantity (Empresa empresa, Integer qtdPaginas, Integer qtdEmpresas) {
+        List<Empresa> empresas = new ArrayList<Empresa>();
+        option = isoDateToJoda();
+        try {
+            this.mongoClient = new MongoClient(this.host + ":" + this.port, option);
+            MongoDatabase database = this.mongoClient.getDatabase(this.database);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION);
+            FindIterable<Document> find = collection.find().limit(qtdEmpresas * (qtdPaginas - 1)).skip(qtdPaginas).sort(new Document ("_id", 1));
             List<Document> empresasDoc = findForEach(find);
             for(Document document : empresasDoc) {
                 empresas.add(documentToEmpresa(document));
@@ -291,6 +335,18 @@ public class EmpresaRepository {
         Iterator<String> itr = setKeys.iterator();
         while (itr.hasNext()) {
             listKeys.add(itr.next());
+        }
+        return listKeys;
+    }
+    
+    private List<String> catchCnpj(FindIterable<Document> find) {
+        List<String> listKeys = new ArrayList<>();
+        for(Document empresaDoc : find) {
+            Set<String> setKeys = (Set<String>) empresaDoc.get("_id");
+            Iterator<String> itr = setKeys.iterator();
+            while (itr.hasNext()) {
+                listKeys.add(itr.next());
+            }
         }
         return listKeys;
     }
