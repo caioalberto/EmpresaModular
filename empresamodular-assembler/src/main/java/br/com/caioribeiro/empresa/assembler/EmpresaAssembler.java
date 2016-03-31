@@ -2,15 +2,17 @@ package br.com.caioribeiro.empresa.assembler;
 
 import static br.com.caioribeiro.empresa.assembler.EmailAssembler.emailListToSet;
 import static br.com.caioribeiro.empresa.assembler.EmailAssembler.emailSetToDocument;
-import static br.com.caioribeiro.empresa.assembler.EnderecoAssembler.enderecoListToDocument;
+import static br.com.caioribeiro.empresa.assembler.EnderecoAssembler.enderecoSetToDocument;
 import static br.com.caioribeiro.empresa.assembler.EnderecoAssembler.enderecosDocumentToSet;
 import static br.com.caioribeiro.empresa.assembler.TelefoneAssembler.telefoneDocumentToSet;
 import static br.com.caioribeiro.empresa.assembler.TelefoneAssembler.telefoneListToDocument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
+
 import org.joda.time.DateTime;
 
 import br.com.caioribeiro.empresa.Empresa;
@@ -24,7 +26,7 @@ import br.com.caioribeiro.empresa.Empresa;
 public final class EmpresaAssembler {
     private EmpresaAssembler() {
     };
-
+   
     /**
      * Tranforma uma empresa em um documento.
      * 
@@ -32,32 +34,12 @@ public final class EmpresaAssembler {
      * @return
      */
     public static Document empresaToDocument(Empresa empresa) {
-        if (empresa != null) {
+        checkArgument(empresa.equals(null), "A empresa não pode ser nula!");
             Document empresaDoc = new Document().append("razaoSocial", empresa.getRazaoSocial()).append("nomeFantasia", empresa.getNomeFantasia()).append("_id", empresa.getCnpj())
-                    .append("enderecos", enderecoListToDocument(empresa.getEnderecos())).append("telefones", telefoneListToDocument(empresa.getTelefones()))
+                    .append("enderecos", enderecoSetToDocument(empresa.getEnderecos())).append("telefones", telefoneListToDocument(empresa.getTelefones()))
                     .append("emails", emailSetToDocument(empresa.getEmails())).append("dataDeCriacao", empresa.getDataDeCadastro()).append("dataDeAlteracao", empresa.getDataDeAlteracao());
 
-            return empresaDoc;
-        }
-        return null;
-    }
-
-    /**
-     * Tranforma duas empresas em um documento.
-     * 
-     * @param empresa
-     * @param outra
-     * @return
-     */
-    public static List<Document> empresasToDocument(Empresa empresa, Empresa outra) {
-        List<Empresa> empresas = new ArrayList<Empresa>();
-        List<Document> empresasDoc = new ArrayList<Document>();
-        empresas.add(empresa);
-        empresas.add(outra);
-        for(Empresa empDoc : empresas) {
-            empresasDoc.add(empresaToDocument(empDoc));
-        }
-        return empresasDoc;
+            return empresaDoc;        
     }
 
     /**
@@ -67,8 +49,8 @@ public final class EmpresaAssembler {
      * @return
      */
     public static Empresa documentToEmpresa(Document empresaDoc) {
+        checkArgument(empresaDoc.equals(null), "O documento não pode ser nulo!");
         Empresa empresa = new Empresa();
-
         empresa.setCnpj(empresaDoc.getString("_id"));
         empresa.setRazaoSocial(empresaDoc.getString("razaoSocial"));
         empresa.setNomeFantasia(empresaDoc.getString("nomeFantasia"));
@@ -88,14 +70,12 @@ public final class EmpresaAssembler {
      * @return
      */
     public static List<Empresa> documentsToEmpresa(List<Document> empresasDoc) {
+        checkArgument(empresasDoc.equals(null), "Os documentos não podem ser nulos!");        
         List<Empresa> empresas = new ArrayList<Empresa>();
-        if (empresasDoc != null) {
             for(Document empresaDoc : empresasDoc) {
                 empresas.add(documentToEmpresa(empresaDoc));
-                return empresas;
             }
-        }
-        return null;
+            return empresas;
     }
 
 }

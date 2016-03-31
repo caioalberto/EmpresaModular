@@ -1,7 +1,7 @@
 package br.com.caioribeiro.empresa.assembler;
 
 import static br.com.caioribeiro.empresa.assembler.EmailAssembler.emailSetToDocument;
-import static br.com.caioribeiro.empresa.assembler.EnderecoAssembler.enderecoListToDocument;
+import static br.com.caioribeiro.empresa.assembler.EnderecoAssembler.enderecoSetToDocument;
 import static br.com.caioribeiro.empresa.assembler.TelefoneAssembler.telefoneListToDocument;
 
 import org.bson.Document;
@@ -34,7 +34,7 @@ public final class EmpresaUpdateToDocument {
             if (empresa.getCnpj() != null)
                 empresaFilterDoc.append("cnpj", empresa.getCnpj());
             if (empresa.getEnderecos() != null)
-                empresaFilterDoc.append("enderecos", enderecoListToDocument(empresa.getEnderecos()));
+                empresaFilterDoc.append("enderecos", enderecoSetToDocument(empresa.getEnderecos()));
             if (empresa.getTelefones() != null)
                 empresaFilterDoc.append("telefones", telefoneListToDocument(empresa.getTelefones()));
             if (empresa.getEmails() != null)

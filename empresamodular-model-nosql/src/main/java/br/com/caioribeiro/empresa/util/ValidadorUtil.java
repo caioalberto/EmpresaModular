@@ -16,15 +16,13 @@ import javax.validation.ValidatorFactory;
  *
  */
 public final class ValidadorUtil {
-
+    
     /**
      * Cria uma instancia de validador util.
      */
     private ValidadorUtil() {
     }
     
-    private Validator validator;
-
     /**
      * Contains error.
      *
@@ -41,6 +39,11 @@ public final class ValidadorUtil {
         return false;
     }
     
+    /**
+     * Verifica se o objeto contem erros
+     * @param obj
+     * @return erros, se contiver
+     */
     public static Set<ConstraintViolation<Object>> containsError(Object obj) {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
@@ -48,7 +51,12 @@ public final class ValidadorUtil {
         if (errors.size() != 0);            
             return errors;
     }
-    
+        
+    /**
+     * Recebe os erros, e cria um set de string com as mensagens de erro
+     * @param errors
+     * @return, o set das mensagens de erro
+     */
     public static Set<String> errorMessages (Set<ConstraintViolation<Object>> errors) {
         Set<String> messageErrors = new HashSet<>();
         for(ConstraintViolation<Object> constraintViolation : errors) {            
@@ -56,4 +64,5 @@ public final class ValidadorUtil {
         }
         return messageErrors;
     }
+    
 }

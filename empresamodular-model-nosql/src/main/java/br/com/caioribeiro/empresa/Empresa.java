@@ -1,7 +1,6 @@
 package br.com.caioribeiro.empresa;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -76,7 +75,7 @@ public final class Empresa implements Serializable {
      * Define o nome fantasia de uma empresa.
      */
     @NotBlank(message = "O Nome Fantasia deve ser preenchido!")
-    @Size(min = 10, max = 80, message = "O Nome Fantasia deve ter entre {min} e {max} letras!")
+    @Size(min = 7, max = 80, message = "O Nome Fantasia deve ter entre {min} e {max} letras!")
     @Pattern(regexp = "\\w\\^[^|]|^[^;]*$", message = "O Nome Fantasia não pode conter pipe/ponto-vírgula!")
     private String nomeFantasia;
 

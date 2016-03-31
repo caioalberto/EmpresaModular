@@ -1,5 +1,7 @@
 package br.com.caioribeiro.empresa.assembler;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +30,7 @@ public final class EnderecoAssembler {
      * @return
      */
     public static Document enderecoToDocument(Endereco endereco) {
+        checkArgument(endereco.equals(null), "O endereço não pode ser nulo!");
         Document enderecoDoc = new Document().append("logradouro", endereco.getLogradouro()).append("numero", endereco.getNumero()).append("bairro", endereco.getBairro())
                 .append("cep", endereco.getCep()).append("cidade", endereco.getCidade()).append("estado", endereco.getEstado()).append("pais", endereco.getPais())
                 .append("tipoEndereco", endereco.getEnderecoType().name());
@@ -41,6 +44,7 @@ public final class EnderecoAssembler {
      * @return
      */
     public static Endereco documentToEndereco(Document enderecoDoc) {
+        checkArgument(enderecoDoc.equals(null), "O documento não pode ser nulo!");
         Endereco endereco = new Endereco();
         endereco.setLogradouro(enderecoDoc.getString("logradouro"));
         endereco.setNumero(enderecoDoc.getInteger("numero"));
@@ -59,15 +63,14 @@ public final class EnderecoAssembler {
      * @param enderecos
      * @return
      */
-    public static List<Document> enderecoListToDocument(Set<Endereco> enderecos) {
+    public static List<Document> enderecoSetToDocument(Set<Endereco> enderecos) {
+        checkArgument(enderecos.equals(null), "Os enderecos não podem ser nulos!");
         List<Document> enderecosDoc = new ArrayList<Document>();
-        if (enderecos != null) {
-            for(Endereco endereco : enderecos) {
-                enderecosDoc.add(enderecoToDocument(endereco));
-                return enderecosDoc;
-            }
+        for(Endereco endereco : enderecos) {
+            enderecosDoc.add(enderecoToDocument(endereco));
         }
-        return null;
+        return enderecosDoc;
+
     }
 
     /**
@@ -77,14 +80,12 @@ public final class EnderecoAssembler {
      * @return
      */
     public static Set<Endereco> enderecosDocumentToSet(List<Document> enderecosDoc) {
+        checkArgument(enderecosDoc.equals(null), "A lista de documentos não pode ser nula!");
         Set<Endereco> enderecos = new HashSet<Endereco>();
-        if (enderecosDoc != null) {
-            for(Document endDoc : enderecosDoc) {
-                enderecos.add(documentToEndereco(endDoc));
-                return enderecos;
-            }
+        for(Document endDoc : enderecosDoc) {
+            enderecos.add(documentToEndereco(endDoc));
         }
-        return null;
+        return enderecos;
     }
 
     /**
